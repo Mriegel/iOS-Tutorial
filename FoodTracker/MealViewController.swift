@@ -23,6 +23,13 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         nameTextField.delegate = self
+        
+        if let initialMeal = meal {
+            navigationItem.title = initialMeal.name
+            nameTextField.text = initialMeal.name
+            ratingControl.rating = initialMeal.rating
+            photoImageView.image = initialMeal.photo
+        }
         checkValidMealName()
     }
     
@@ -37,7 +44,11 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
     }
     
     @IBAction func cancel(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true, completion: nil)
+        if presentingViewController is UINavigationController {
+            dismissViewControllerAnimated(true, completion: nil)
+        } else {
+            navigationController!.popViewControllerAnimated(true)
+        }
     }
     
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
