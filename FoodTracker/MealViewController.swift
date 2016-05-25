@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
@@ -19,8 +20,9 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
     var meal: Meal?
     let spinner = UIActivityIndicatorView.init(activityIndicatorStyle: UIActivityIndicatorViewStyle.Gray)
     
+    static let SEARCH_ENGINE_ID = "004088210027320381553:kp-wcwgigsi"
     static let GOOGLE_API_KEY = "AIzaSyDPKOELmAJNrZwNCgCHL3ZR8AbxkUz25VY"
-    static let customSearchEngineUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyDPKOELmAJNrZwNCgCHL3ZR8AbxkUz25VY&q=%@"
+    static let customSearchEngineUrl = "https://www.googleapis.com/customsearch/v1?key=AIzaSyDPKOELmAJNrZwNCgCHL3ZR8AbxkUz25VY&cx=004088210027320381553:kp-wcwgigsi&q=%@"
     
     
     override func viewDidLoad() {
@@ -55,19 +57,27 @@ class MealViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
     typealias UrlResponse = (data:NSData?, response: NSURLResponse?, error:NSError?)
     
     func feelingLuckyImage() {
-        guard let searchTerm = nameTextField.text else { return }
-        let searchString = String(format: MealViewController.customSearchEngineUrl, searchTerm)
-        if let checkedURL = NSURL(string: "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg") {
+        let searchString = "https://upload.wikimedia.org/wikipedia/commons/8/88/Bright_red_tomato_and_cross_section02.jpg"
+        if let checkedURL = NSURL(string: searchString) {
             self.spinner.startAnimating()
             self.photoImageView.userInteractionEnabled = false;
-            getDataFromUrl(checkedURL) { (data, response, error)  in
-                dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                    guard let data = data where error == nil else { return }
+            getDataFromUrl(checkedURL) { (data, response, error) in
+                guard let data = data where error == nil else {
+                    self.clearSpinner() {}
+                    return
+                }
+                self.clearSpinner() {
                     self.photoImageView.image = UIImage(data: data)
-                    self.spinner.stopAnimating()
-                    self.photoImageView.userInteractionEnabled = true;
                 }
             }
+        }
+    }
+    
+    func clearSpinner(mainThreadHook: () -> ()) {
+        dispatch_async(dispatch_get_main_queue()) { () -> Void in
+            mainThreadHook()
+            self.spinner.stopAnimating()
+            self.photoImageView.userInteractionEnabled = true;
         }
     }
     
